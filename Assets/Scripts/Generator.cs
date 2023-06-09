@@ -79,7 +79,7 @@ public class Generator
         }
         if (c == GRID_SIZE)
         {
-            return FillGrid(r + 1, c, grid);
+            return FillGrid(r + 1, 0, grid);
         }
 
         List<int> numbers = new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
