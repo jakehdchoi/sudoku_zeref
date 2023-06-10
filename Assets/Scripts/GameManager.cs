@@ -46,4 +46,143 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void GoToNextLevel()
+    {
+        RestartGame();
+    }
+
+    private void Update()
+    {
+        if (hasGameFinished || !Input.GetMouseButton(0)) return;
+
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
+        RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
+        Cell tempCell;
+        if (!(hit
+            && hit.collider.TryGetComponent(out tempCell)
+            && tempCell != selectedCell
+            && !tempCell.IsLocked))
+        {
+            return;
+        }
+
+        ResetGrid();
+        selectedCell = tempCell;
+        HighLight();
+    }
+
+    private void ResetGrid()
+    {
+        for (int i = 0; i < GRID_SIZE; i++)
+        {
+            for (int j = 0; j < GRID_SIZE; j++)
+            {
+                cells[i, j].Reset();
+            }
+        }
+    }
+
+    public void UpdateCellValue(int value)
+    {
+        if (hasGameFinished || selectedCell == null)
+        {
+            return;
+        }
+        selectedCell.UpdateValue(value);
+        HighLight();
+        CheckWin();
+    }
+
+    private void CheckWin()
+    {
+        for (int i = 0; i < GRID_SIZE; i++)
+        {
+            for (int j = 0; j < GRID_SIZE; j++)
+            {
+                if (cells[i, j].IsIncorrect || cells[i, j].Value == 0)
+                {
+                    return;
+                }
+            }
+        }
+        hasGameFinished = true;
+
+        for (int i = 0; i < GRID_SIZE; i++)
+        {
+            for (int j = 0; j < GRID_SIZE; j++)
+            {
+                cells[i, j].UpdateWin();
+            }
+        }
+
+        Invoke("GoToNextLevel", 2f);
+    }
+
+    private void HighLight()
+    {
+        for (int i = 0; i < GRID_SIZE; i++)
+        {
+            for (int j = 0; j < GRID_SIZE; j++)
+            {
+                cells[i, j].IsIncorrect = !IsValid(cells[i, j], cells);
+            }
+        }
+
+        int currentRow = selectedCell.Row;
+        int currentCol = selectedCell.Col;
+        int subGridRow = currentRow - currentRow % SUBGRID_SIZE;
+        int subGridCol = currentCol - currentCol % SUBGRID_SIZE;
+
+        for (int i = 0; i < GRID_SIZE; i++)
+        {
+            cells[i, currentCol].HighLight();
+            cells[currentRow, i].HighLight();
+            cells[subGridRow + i % 3, subGridCol + i / 3].HighLight();
+        }
+
+        cells[currentRow, currentCol].Select();
+    }
+
+    private bool IsValid(Cell cell, Cell[,] cells)
+    {
+        int row = cell.Row;
+        int col = cell.Col;
+        int value = cell.Value;
+        cell.Value = 0;
+
+        if (value == 0) return true;
+
+        for (int i = 0; i < GRID_SIZE; i++)
+        {
+            if (cells[row, i].Value == value || cells[i, col].Value == value)
+            {
+                cell.Value = value;
+                return false;
+            }
+        }
+
+        int subGridRow = row - row % SUBGRID_SIZE;
+        int subGridCol = col - col % SUBGRID_SIZE;
+        for (int r = subGridRow; r < subGridRow + SUBGRID_SIZE; r++)
+        {
+            for (int c = subGridCol; c < subGridCol + SUBGRID_SIZE; c++)
+            {
+                if (cells[r, c].Value == value)
+                {
+                    cell.Value = value;
+                    return false;
+                }
+            }
+        }
+
+        cell.Value = value;
+        return true;
+    }
+
+    public void RestartGame()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+    }
+
 }

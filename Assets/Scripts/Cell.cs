@@ -17,6 +17,27 @@ public class Cell : MonoBehaviour
     [SerializeField] private Color _startUnlockedTextColor;
     [SerializeField] private Color _startLockedCellColor;
     [SerializeField] private Color _startLockedTextColor;
+    [Space]
+    [Header("HighLighted")]
+    [SerializeField] private Color _highlightUnlockedCellColor;
+    [SerializeField] private Color _highlightUnlockedTextColor;
+    [SerializeField] private Color _highlightLockedCellColor;
+    [SerializeField] private Color _highlightLockedTextColor;
+    [SerializeField] private Color _highlightWrongCellColor;
+    [SerializeField] private Color _highlightWrongTextColor;
+    [Space]
+    [Header("Selected")]
+    [SerializeField] private Color _selectedCellColor;
+    [SerializeField] private Color _selectedTextColor;
+    [SerializeField] private Color _selectedWrongCellColor;
+    [SerializeField] private Color _selectedWrongTextColor;
+    [Space]
+    [Header("Reset")]
+    [SerializeField] private Color _resetCellColor;
+    [SerializeField] private Color _resetTextColor;
+    [SerializeField] private Color _resetWrongCellColor;
+    [SerializeField] private Color _resetWrongTextColor;
+
 
     public void Init(int value)
     {
@@ -38,4 +59,76 @@ public class Cell : MonoBehaviour
             _valueText.text = Value.ToString();
         }
     }
+
+    public void HighLight()
+    {
+        if (IsLocked)
+        {
+            _backgroundSprite.color = _highlightLockedCellColor;
+            _valueText.color = _highlightLockedTextColor;
+        }
+        else
+        {
+            if (IsIncorrect)
+            {
+                _backgroundSprite.color = _highlightWrongCellColor;
+                _valueText.color = _highlightWrongTextColor;
+            }
+            else
+            {
+                _backgroundSprite.color = _highlightUnlockedCellColor;
+                _valueText.color = _highlightUnlockedTextColor;
+
+            }
+        }
+    }
+
+    public void Select()
+    {
+        if (IsIncorrect)
+        {
+            _backgroundSprite.color = _selectedWrongCellColor;
+            _valueText.color = _selectedWrongTextColor;
+        }
+        else
+        {
+            _backgroundSprite.color = _selectedCellColor;
+            _valueText.color = _selectedTextColor;
+        }
+    }
+
+    public void Reset()
+    {
+        if (IsLocked)
+        {
+            _backgroundSprite.color = _startLockedCellColor;
+            _valueText.color = _startLockedTextColor;
+        }
+        else
+        {
+            if (IsIncorrect)
+            {
+                _backgroundSprite.color = _resetWrongCellColor;
+                _valueText.color = _resetWrongTextColor;
+            }
+            else
+            {
+                _backgroundSprite.color = _resetCellColor;
+                _valueText.color = _resetTextColor;
+            }
+        }
+    }
+
+    public void UpdateValue(int value)
+    {
+        Value = value;
+        _valueText.text = Value == 0 ? "" : Value.ToString();
+    }
+
+    public void UpdateWin()
+    {
+        _backgroundSprite.color = _startLockedCellColor;
+        _valueText.color = _startLockedTextColor;
+    }
+
 }
