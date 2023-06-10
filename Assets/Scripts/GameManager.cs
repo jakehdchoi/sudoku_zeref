@@ -26,7 +26,19 @@ public class GameManager : MonoBehaviour
 
     private void SpawnCells()
     {
-        int[,] puzzleGrid = Generator.GeneratePuzzle(Generator.DifficultyLevel.EASY);
+        int[,] puzzleGrid = new int[GRID_SIZE, GRID_SIZE];
+        int level = PlayerPrefs.GetInt("Level", 0);
+
+        if (level == 0)
+        {
+            CreateAndStoreLevel(puzzleGrid, 1);
+            level = 1;
+        }
+        else
+        {
+            GetCurrentLevel(puzzleGrid);
+        }
+        _levelText.text = "Level " + level.ToString();
 
         for (int i = 0; i < GRID_SIZE; i++)
         {
@@ -46,8 +58,43 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void CreateAndStoreLevel(int[,] grid, int level)
+    {
+        int[,] tempGrid = Generator.GeneratePuzzle((Generator.DifficultyLevel)(level / 100));
+        string arrayString = "";
+        for (int i = 0; i < GRID_SIZE; i++)
+        {
+            for (int j = 0; j < GRID_SIZE; j++)
+            {
+                arrayString += tempGrid[i, j].ToString() + ",";
+                grid[i, j] = tempGrid[i, j];
+            }
+        }
+
+        arrayString = arrayString.TrimEnd(',');
+        PlayerPrefs.SetInt("Level", level);
+        PlayerPrefs.SetString("Grid", arrayString);
+    }
+
+    private void GetCurrentLevel(int[,] grid)
+    {
+        string arrayString = PlayerPrefs.GetString("Grid");
+        string[] arrayValue = arrayString.Split(',');
+        int index = 0;
+        for (int i = 0; i < GRID_SIZE; i++)
+        {
+            for (int j = 0; j < GRID_SIZE; j++)
+            {
+                grid[i, j] = int.Parse(arrayValue[index]);
+                index++;
+            }
+        }
+    }
+
     private void GoToNextLevel()
     {
+        int level = PlayerPrefs.GetInt("Level", 0);
+        CreateAndStoreLevel(new int[GRID_SIZE, GRID_SIZE], level + 1);
         RestartGame();
     }
 
